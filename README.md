@@ -1,38 +1,38 @@
 # bilateral-agreement-contract-template
 
-### Introduction
+## Overview  
 
 The `bilateral-agreement-contract-template` represents a foundational framework for adopting bilateral agreement mechanisms in distributed environments. It bridges traditional contract law and its principles with programmable, self-executing agreements, commonly referred to as smart contracts. This template can serve as a guideline for constructing agreements between two parties, akin to traditional bilateral contracts, but fully integrated into DLT-based Loyalty Platform.
 
-### Diagram
+## Diagram
 
 <!-- TODO png or mermaid -->
 
-#### Clone repository to development environment
+## Clone repository to development environment
 
 ```shell
 git clone http://github.com/Kiwari-labs/bilateral-agreeement-template.git
 ```
 
-#### Installing dev dependencies
-
+## Installing  
+To install all necessary packages and dependencies in the project, run command
 ```
 yarn install
 ```
 
-#### Complied the contract
-
+## Compile the code
+To compile the smart contracts, run command
 ```
 yarn compile
 ```
 
-#### Test the contract
-
+## Testing
+To run the tests and ensure that the contracts behave as expected, run command
 ```
 yarn test
 ```
 
-### Example build you first custom agreement
+## Example build you first custom agreement
 
 <!-- Instruction / Walkthrough -->
 
@@ -70,13 +70,13 @@ contract AgreementLogic is AgreementTemplate {
 }
 ```
 
-### Contribute
+## Contribute
 
 Contribute guideline. See the [CONTRIBUTE](CONTRIBUTE) guide.
 
 ### Support and Issue
 
-For support or any inquiries, feel free to reach out to us at [github-issue]() or kiwarilabs@protonmail.com
+For support or any inquiries, feel free to reach out to us at [github-issue](https://github.com/Kiwari-Labs/bilateral-agreement-contract-template/issues) or kiwarilabs@protonmail.com
 
 ### License
 

@@ -1,6 +1,6 @@
 # bilateral-agreement-contract-template
 
-## Overview  
+## Overview
 
 The `bilateral-agreement-contract-template` represents a foundational framework for adopting bilateral agreement mechanisms in distributed environments. It bridges traditional contract law and its principles with programmable, self-executing agreements, commonly referred to as smart contracts. This template can serve as a guideline for constructing agreements between two parties, akin to traditional bilateral contracts, but fully integrated into DLT-based Loyalty Platform.
 
@@ -14,20 +14,26 @@ The `bilateral-agreement-contract-template` represents a foundational framework 
 git clone http://github.com/Kiwari-labs/bilateral-agreeement-template.git
 ```
 
-## Installing  
+## Installing
+
 To install all necessary packages and dependencies in the project, run command
+
 ```
 yarn install
 ```
 
 ## Compile the code
+
 To compile the smart contracts, run command
+
 ```
 yarn compile
 ```
 
 ## Testing
+
 To run the tests and ensure that the contracts behave as expected, run command
+
 ```
 yarn test
 ```
@@ -38,7 +44,7 @@ yarn test
 
 ```Solidity
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 /// @title Agreement Title
 /// @notice e.g. link to Term of Usage, Policies, Code of Conduct

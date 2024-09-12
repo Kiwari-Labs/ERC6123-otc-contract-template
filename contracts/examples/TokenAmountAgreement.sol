@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 /// @title General Token Amount Agreement
 /// @notice This contract serves as a template for creating bilateral agreements based on token amounts.
@@ -9,9 +9,9 @@ pragma solidity >=0.5.0 <0.8.0;
 ///      are available at https://github.com/Kiwari-labs/
 /// @author Kiwari-labs
 
-/// @TODO change to 
-// import @kiwarilabs/contracts/libraries/comparator/AddresComparator.sol";
-// import @kiwarilabs/contracts/libraries/comparator/IntComparator.sol";
+/// @TODO change to
+// import @kiwarilabs/contracts/libraries/utils/AddresComparator.sol";
+// import @kiwarilabs/contracts/libraries/utils/IntComparator.sol";
 // import @kiwarilabs/contracts/agreement/bilateral/AgreementTemplate.sol";
 
 import "../AddressComparator.sol";

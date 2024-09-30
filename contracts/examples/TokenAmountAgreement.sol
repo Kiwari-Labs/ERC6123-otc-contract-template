@@ -3,20 +3,12 @@ pragma solidity >=0.8.0 <0.9.0;
 
 /// @title General Token Amount Agreement
 /// @notice This contract serves as a template for creating bilateral agreements based on token amounts.
-///         It facilitates programmable agreements between two parties involving the exchange or validation
-///         of token amounts.
-/// @dev Documentation and implementation details of the General Token Amount Agreement
-///      are available at https://github.com/Kiwari-labs/
-/// @author Kiwari-labs
+/// It facilitates programmable agreements between two parties involving the exchange or validation of token amounts.
+/// @author Kiwari Labs
 
-/// @TODO change to
-// import @kiwarilabs/contracts/libraries/utils/AddresComparator.sol";
-// import @kiwarilabs/contracts/libraries/utils/IntComparator.sol";
-// import @kiwarilabs/contracts/agreement/bilateral/AgreementTemplate.sol";
-
-import "../AddressComparator.sol";
-import "../IntComparator.sol";
-import "../template/AgreementTemplate.sol";
+import "@kiwarilabs/contracts/libraries/utils/AddresComparator.sol";
+import "@kiwarilabs/contracts/libraries/utils/IntComparator.sol";
+import "@kiwarilabs/contracts/abstract/AgreementTemplate.sol";
 
 contract GeneralTokenAgreement is AgreementTemplate {
     using IntComparator for uint256;

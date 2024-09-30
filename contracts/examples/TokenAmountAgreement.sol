@@ -32,7 +32,7 @@ contract GeneralTokenAgreement is AgreementTemplate {
             );
     }
 
-    function _verifyBilaterlContract(
+    function _verifyBilateralContract(
         address contractA,
         address contractB
     ) private pure returns (bool) {
@@ -59,7 +59,7 @@ contract GeneralTokenAgreement is AgreementTemplate {
         ) = abi.decode(y, (uint, uint, address, address));
         // Verify contract addresses, token amounts, and balances
         require(
-            _verifyBilaterlContract(agreementContractA, agreementContractB),
+            _verifyBilateralContract(agreementContractA, agreementContractB),
             "Invalid agreement contract"
         );
         require(

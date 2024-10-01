@@ -8,7 +8,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import "@kiwarilabs/contracts/libraries/utils/AddresComparator.sol";
 import "@kiwarilabs/contracts/libraries/utils/IntComparator.sol";
-import "@kiwarilabs/contracts/abstract/AgreementTemplate.sol";
+import "@kiwarilabs/contracts/abstracts/AgreementTemplate.sol";
 
 contract GeneralTokenAgreement is AgreementTemplate {
     using IntComparator for uint256;

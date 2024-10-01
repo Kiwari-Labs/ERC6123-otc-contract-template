@@ -10,13 +10,13 @@ The `bilateral-agreement-contract-template` represents a foundational framework 
 
 ## Clone repository to development environment
 
-```shell
+``` shell
 git clone http://github.com/Kiwari-labs/bilateral-agreeement-template.git
 ```
 
 ## Installing
 
-To install all necessary packages and dependencies in the project, run command
+To install all necessary packages and dependencies in the project, run the command
 
 ```
 yarn install
@@ -24,7 +24,7 @@ yarn install
 
 ## Compile the code
 
-To compile the smart contracts, run command
+To compile the smart contracts, run the command
 
 ```
 yarn compile
@@ -32,7 +32,7 @@ yarn compile
 
 ## Testing
 
-To run the tests and ensure that the contracts behave as expected, run command
+To run the tests and ensure that the contracts behave as expected, run the command
 
 ```
 yarn test
@@ -48,25 +48,27 @@ pragma solidity >=0.8.0 <0.9.0;
 
 /// @title Agreement Title
 /// @notice e.g. link to Term of Usage, Policies, Code of Conduct
-/// @dev describe or url external link
-/// @custom:author_a contact_party_A <party_a_email@domain.com>
-/// @custom:author_b contact_party_B <party_b_emailA@domain.com>
+/// @dev describe or URL external link
+/// @custom:first_author @first_author <first_author@domain.com>
+/// @custom:second_author @second_author <second_author@domain.com>
 
-import "../AddressComparator.sol";
-import "../IntComparator.sol";
-import "../template/AgreementTemplate.sol";
+import "@kiwiarilabs/contracts/libraries/utils/AddressComparator.sol";
+import "@kiwiarilabs/contracts/libraries/utils/IntComparator.sol";
+import "@kiwairilabs/contracts/abstracts/AgreementTemplate.sol";
 
 // MUST `import ../template/AgreementTemplate.sol`, DO NOT delete `is AgreementTemplate`.
 contract AgreementLogic is AgreementTemplate {
 
+    // solc-ignore-next-line func-mutability
     function _verifyAgreement(
         bytes memory x,
         bytes memory y
     ) internal override returns (bool) {
         // #################### start your custom logic ####################
-        // decoding data from bytes to what ever.
-        // abi.decode(x, types);
-        // abi.decode(y, types);
+        // decoding data from bytes to first is the address of token second is the amount of token,
+        // other for whatever additional data.
+        // abi.decode(x, (address, uint256, others);
+        // abi.decode(y, (address, uint256, others));
         // require(_condition(x, y),"error message");
         // ... more condition if needed
         // #################### end your custom logic ####################

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-/// @title Cutomized Agreement
+/// @title Customized Agreement
 /// @author <author@domain.com>
 
 import "@kiwarilabs/contracts/abstracts/AgreementTemplate.sol";
 
-contract CutomizedAgreement is AgreementTemplate {
+contract CustomizedAgreement is AgreementTemplate {
     function _verifyAgreement(
         bytes memory x,
         bytes memory y

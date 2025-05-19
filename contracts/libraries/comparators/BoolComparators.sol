@@ -3,7 +3,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 /**
  * @title Bool type comparator library
+ * @author Kiwari Labs
  */
+
 library BoolComparators {
     function and(bool x, bool y) internal pure returns (bool) {
         assembly {

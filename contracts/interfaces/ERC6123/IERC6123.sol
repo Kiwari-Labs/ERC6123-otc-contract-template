@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0 <0.8.0;
+pragma solidity >=0.8.0 <0.9.0;
 
 interface IERC6123 {
     function inceptTrade(
@@ -38,6 +38,12 @@ interface IERC6123 {
         string memory terminationTerms
     ) external;
 
+    function confirmTradeTermination(
+        string memory tradeId,
+        int256 terminationPayment,
+        string memory terminationTerms
+    ) external;
+
     function initiateSettlement() external;
 
     function performSettlement(
@@ -45,18 +51,44 @@ interface IERC6123 {
         string memory settlementData
     ) external;
 
-    event TradeIncepted(address initiator, string tradeId, string tradeData); // suggestion indexed initiator and tradeId
-    event TradeConfirmed(address confirmer, string tradeId); // suggestion indexed confirmer and tradeId
-    event TradeCanceled(address initiator, string tradeId); // suggestion indexed initiator and tradeId
-    event TradeActivated(string tradeId);
-    
-    event TradeTerminationRequest(address initiator, string tradeId, int256 terminationPayment, string terminationTerms); // suggestion indexed initiator and tradeId
-    event TradeTerminationConfirmed(address confirmer, string tradeId, int256 terminationPayment, string terminationTerms); // suggestion confirmer initiator and tradeId
-    event TradeTerminationCanceled(address initiator, string tradeId, string terminationTerms); // suggestion initiator and tradeId
+    event TradeIncepted(
+        address indexed initiator,
+        string indexed tradeId,
+        string tradeData
+    );
+    event TradeConfirmed(address indexed confirmer, string indexed tradeId);
+    event TradeCanceled(address indexed initiator, string indexed tradeId);
+    event TradeActivated(string indexed tradeId);
+
+    event TradeTerminationRequest(
+        address indexed initiator,
+        string indexed tradeId,
+        int256 terminationPayment,
+        string terminationTerms
+    );
+    event TradeTerminationConfirmed(
+        address indexed confirmer,
+        string indexed tradeId,
+        int256 terminationPayment,
+        string terminationTerms
+    );
+    event TradeTerminationCanceled(
+        address indexed initiator,
+        string indexed tradeId,
+        string terminationTerms
+    );
     event TradeTerminated(string cause);
 
-    event SettlementRequested(address initiator, string tradeData, string lastSettlementData); // suggestion initiator
-    event SettlementDetermined(address initiator, int256 settlementAmount, string settlementData); // suggestion initiator
+    event SettlementRequested(
+        address indexed initiator,
+        string indexed tradeData,
+        string lastSettlementData
+    );
+    event SettlementDetermined(
+        address indexed initiator,
+        int256 settlementAmount,
+        string settlementData
+    );
     event SettlementTransferred(string transactionData);
     event SettlementFailed(string transactionData);
 }

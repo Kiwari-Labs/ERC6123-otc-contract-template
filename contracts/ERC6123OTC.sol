@@ -1,21 +1,24 @@
-// SPDX-License-Identifier: Apache-2.0
-pragma solidity >=0.5.0 <0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0 <0.9.0;
 
-import {String} from "@openzeppelin/contracts/utils/Strings.sol";
-import {IERC6123} from "./interfaces/IERC6123.sol";
+import {StringBytes as Strings} from "./libraries/StringBytes.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC6123OTC} from "./interfaces/ERC6123/extensions/IERC6123OTC.sol";
+// import {TradeValidator} from "./interfaces/ITradeValidator.sol";
 
 /**
  * @title ERC6123 Over-The-Counter (OTC)
  * @author Kiwari Labs
  */
 
-abstract contract ERC6123OTC is IERC6123 {
-    using String for uint256;
+abstract contract ERC6123OTC is IERC6123OTC {
+    using Strings for string;
 
-    enum DATA_FORMAT {
+    enum TRADE_DATA_FORMAT {
         BYTES,
         JSON,
-        XML
+        XML,
+        URI // can stored off-chain
     }
 
     enum TRADE_STATE {
@@ -35,83 +38,121 @@ abstract contract ERC6123OTC is IERC6123 {
     IERC20 private _tokenA;
     IERC20 private _tokenB;
 
+    // ITradeValidator private _tradeValidator;
+
     TRADE_STATE private _tradeState;
 
     string private _tradeId;
     string private _tradeData;
     string private _terminationTerms;
+    mapping(string => address) _pendingRequests;
+
+    uint256 private _counter;
+
+    error ERC6123InvalidTradeState(TRADE_STATE current, TRADE_STATE expected);
 
     modifier whenTradeInactive() {
-        if (_tradeState != TRADE_STATE.INACTIVE) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.INACTIVE);
         _;
     }
 
     modifier whenTradeIncepted() {
-        if (_tradeState != TRADE_STATE.INCEPTED) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.INCEPTED);
         _;
     }
-    
+
     modifier whenConfirmed() {
-        if (_tradeState != TRADE_STATE.CONFIRMED) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.CONFIRMED);
         _;
     }
 
     modifier whenValuation() {
-        if (_tradeState != TRADE_STATE.VALUATION) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.VALUATION);
         _;
     }
 
     modifier whenInTransfer() {
-        if (_tradeState != TRADE_STATE.IN_TRANSFER) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.IN_TRANSFER);
         _;
     }
 
     modifier whenSettled() {
-        if (_tradeState != TRADE_STATE.SETTLED) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.SETTLED);
         _;
     }
 
     modifier whenInTerminated() {
-        if (_tradeState != TRADE_STATE.IN_TERMINATED) {
-            revert ();
-        }
+        _requireState(TRADE_STATE.IN_TERMINATED);
         _;
     }
 
-    // function _generateTradeId() internal returns (bytes32) {
-    //  return ;
-    // }
+    constructor(address partyA, address partyB, IERC20 tokenA, IERC20 tokenB) {
+        _partyA = partyA;
+        _partyB = partyB;
+        _tokenA = tokenA;
+        _tokenB = tokenB;
+    }
+
+    function _requireState(TRADE_STATE expected) private {
+        TRADE_STATE current = _tradeState;
+        if (current != expected) {
+            revert ERC6123InvalidTradeState(current, expected);
+        }
+    }
+
+    function _calculateTradeId(
+        address initiator,
+        address withParty,
+        string memory tradeData,
+        int position,
+        int paymentAmount,
+        string memory initialSettlementData
+    ) private returns (string memory) {
+        return
+            uint256(
+                keccak256(
+                    abi.encode(
+                        initiator,
+                        withParty,
+                        tradeData,
+                        position,
+                        paymentAmount,
+                        initialSettlementData,
+                        _counter,
+                        block.chainid
+                    )
+                )
+            ).toHexString();
+    }
 
     function _updateTradeState(TRADE_STATE state) internal {
-        TRADE_STATE tradeState = _tradeState;
-        if (state == TRADE_STATE.INCEPTED && tradeState != TRADE_STATE.INACTIVE) {
-            revert ();
+        TRADE_STATE current = _tradeState;
+        if (state == TRADE_STATE.INCEPTED && current != TRADE_STATE.INACTIVE) {
+            revert ERC6123InvalidTradeState(current, TRADE_STATE.INACTIVE);
         }
-        if (state == TRADE_STATE.CONFIRMED && tradeState != TRADE_STATE.INCEPTED) {
-            revert ();
+        if (state == TRADE_STATE.CONFIRMED && current != TRADE_STATE.INCEPTED) {
+            revert ERC6123InvalidTradeState(current, TRADE_STATE.INCEPTED);
         }
-        if (state == TRADE_STATE.IN_TRANSFER && !(tradeState == TRADE_STATE.CONFIRMED || tradeState == TRADE_STATE.VALUATION)) {
-            revert ();
+        if (
+            state == TRADE_STATE.IN_TRANSFER &&
+            !(current == TRADE_STATE.CONFIRMED ||
+                current == TRADE_STATE.VALUATION)
+        ) {
+            // @TODO expected state can be confirmed or valuation.
+            revert ERC6123InvalidTradeState(current, TRADE_STATE.INCEPTED);
         }
-        if (state == TRADE_STATE.VALUATION && tradeState != TRADE_STATE.SETTLED) {
-            revert ();
+        if (state == TRADE_STATE.VALUATION && current != TRADE_STATE.SETTLED) {
+            revert ERC6123InvalidTradeState(current, TRADE_STATE.SETTLED);
         }
-        if (state == TRADE_STATE.IN_TERMINATED && !(tradeState == TRADE_STATE.IN_TRANSFER || tradeState == TRADE_STATE.SETTLED )) {
-            revert ();
+        if (
+            state == TRADE_STATE.IN_TERMINATED &&
+            !(current == TRADE_STATE.IN_TRANSFER ||
+                current == TRADE_STATE.SETTLED)
+        ) {
+            // @TODO expected state can be in transfer or settled.
+            revert ERC6123InvalidTradeState(current, TRADE_STATE.INCEPTED);
         }
-        state = tradeState;
+        _tradeState = state;
     }
 
     function inceptTrade(
@@ -123,26 +164,24 @@ abstract contract ERC6123OTC is IERC6123 {
     ) external virtual override returns (string memory) {
         address initiator = msg.sender;
         if (initiator == withParty) {
-            revert ();
+            revert();
         }
         if (position < -1 || position > 1) {
-            revert ();
+            revert();
         }
-        string tradeId = uint256(
-            keccak256(
-                abi.encode(
-                    initiator,
-                    withParty,
-                    tradeData,
-                    position,
-                    paymentAmount,
-                    initialSettlementData
-                )
-            )
-        ).toHexString();
+        string memory tradeId = _calculateTradeId(
+            initiator,
+            withParty,
+            tradeData,
+            position,
+            paymentAmount,
+            initialSettlementData
+        );
         _updateTradeState(TRADE_STATE.INCEPTED);
-        // pendingRequests[tradeId] = initiator; // unclear
-        // receivingParty = position == 1 ? initiator : withParty; // unclear
+        // @TODO
+        // _pendingRequests[tradeId] = initiator; // unclear
+        // _receivingParty = position == 1 ? initiator : withParty; // unclear
+        _tradeData = tradeData;
 
         emit TradeIncepted(initiator, tradeId, tradeData);
     }
@@ -154,15 +193,29 @@ abstract contract ERC6123OTC is IERC6123 {
         int256 paymentAmount,
         string memory initialSettlementData
     ) external virtual override {
-        address confrimer = msg.sender;
-        // this function should call conditional check for feasibility in data format.
-        // bytes memory parsedTradeData = tradeData.parseBytes();
-        // bytes memory parsedInitialSettlementData = initialSettlementData.parseBytes();
-        // (type var) = abi.decode(settlementData, (types));
-        // string tradeId = implementation.getTradeId(parsedInitialSettlementData);
-
+        address confirmer = msg.sender;
+        // function call trade validator contract for checking trade data meet the requirement.
+        bytes memory parsedTradeData = tradeData.parseHexStringToBytes();
+        bytes memory parsedInitialSettlementData = initialSettlementData.parseHexStringToBytes();
+        // @TODO validate trade data and settlement data
+        // if (_tradeValidator.validateTradeData(parsedTradeData)) {
+        //     revert TradeValidatorValidateFailed("trade-data");
+        // }
+        // if (_tradeValidator.validateSettlementData(parsedInitialSettlementData)) {
+        //     revert TradeValidatorValidateFailed("settlement-data");
+        // }
+        string memory tradeId = _calculateTradeId(
+            confirmer,
+            withParty,
+            tradeData,
+            position,
+            paymentAmount,
+            initialSettlementData
+        );
+        // if _pendingRequests[tradeId]
+        // delete _pendingRequests[tradeId]; // perform clear the request.
         _updateTradeState(TRADE_STATE.CONFIRMED);
-        emit TradeConfirmed(confrimer, tradeId);
+        emit TradeConfirmed(confirmer, tradeId);
 
         // if tradeData match
         // emit TradeActivate(tradeId);
@@ -179,6 +232,18 @@ abstract contract ERC6123OTC is IERC6123 {
         string memory initialSettlementData
     ) external virtual override {
         address initiator = msg.sender;
+        string memory tradeId = _calculateTradeId(
+            initiator,
+            withParty,
+            tradeData,
+            position,
+            paymentAmount,
+            initialSettlementData
+        );
+        if (tradeId != _tradeId) {
+            // revert ();
+        }
+        _updateTradeState(TRADE_STATE.INACTIVE);
 
         emit TradeCanceled(initiator, tradeId);
     }
@@ -189,7 +254,12 @@ abstract contract ERC6123OTC is IERC6123 {
         string memory terminationTerms
     ) external virtual override {
         address initiator = msg.sender;
-
+        _terminationTerms = terminationTerms;
+        bytes memory parsedTerminationTerms = terminationTerms.parseBytes();
+        // @TODO validate termination terms
+        // if (_tradeValidator.validateTerminationTerms(terminationTerms)) {
+        //  revert TradeValidatorValidateFailed("termination-terms");
+        //}
         _updateTradeState(TRADE_STATE.IN_TERMINATED);
 
         emit TradeTerminationRequest(
@@ -233,8 +303,9 @@ abstract contract ERC6123OTC is IERC6123 {
     }
 
     function initiateSettlement() external virtual {
+        address initiator = msg.sender;
 
-        emit SettlementRequested(address initiator, string tradeData, string lastSettlementData);
+        // emit SettlementRequested(initiator, tradeData, lastSettlementData);
     }
 
     function performSettlement(
@@ -242,35 +313,66 @@ abstract contract ERC6123OTC is IERC6123 {
         string memory settlementData
     ) external virtual {
         // emit SettlementDetermined(initiator, settlementAmount, settlementData);
-        // afterTransfer();
+        // afterTransfer(status, );
     }
 
-    function afterTransfer(bool success, uint256 transactionId, string memory transactionData) external {
-        // if success 
+    function afterTransfer(
+        bool success,
+        uint256 transactionId,
+        string memory transactionData
+    ) external {
+        // if success
         // emit SettlementTransferred(tradeId, transactionData);
         // otherwise fail
         // emit SettlementFailed(tradeId, transactionData);
         // emit TradeTerminated("reason");
     }
 
+    /**
+     * @dev See {IERC6123OTC-partyA}.
+     */
+    function partyA() public view override returns (address) {
+        return _partyA;
+    }
+
+    /**
+     * @dev See {IERC6123OTC-partyB}.
+     */
+    function partyB() public view override returns (address) {
+        return _partyB;
+    }
+
+    /**
+     * @dev See {IERC6123OTC-tokenA}.
+     */
+    function tokenA() public view override returns (address) {
+        return address(_tokenA);
+    }
+
+    /**
+     * @dev See {IERC6123OTC-tokenB}.
+     */
+    function tokenB() public view override returns (address) {
+        return address(_tokenB);
+    }
+
+    function tradeData() public view returns (string memory) {
+        return _tradeData;
+    }
+
+    function tradeDataFormat() public pure virtual returns (TRADE_DATA_FORMAT) {
+        return TRADE_DATA_FORMAT.BYTES;
+    }
+
     function tradeId() public view returns (string memory) {
         return _tradeId;
     }
 
-    function tradeState() public view return (TRADE_STATE) {
+    function tradeState() public view returns (TRADE_STATE) {
         return _tradeState;
     }
 
-    function public view returns (address) {
-        return address(_tokenA);
+    function terminationTerms() public view returns (string memory) {
+        return _terminationTerms;
     }
-
-    function public view returns (address) {
-        return
-    }
-
-    function dataFormat() public pure virtual returns (DATA_FORMAT) {
-        return DATA_FORMAT.BYTES;
-    }
-
 }

@@ -2,8 +2,10 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 /**
- * @title Uint256 type comparator library
+ * @title Uint256 type comparator 
+ * @author Kiwari Labs
  */
+
 library UIntComparators {
     function equal(uint256 x, uint256 y) internal pure returns (bool) {
         assembly {

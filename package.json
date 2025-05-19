@@ -9,6 +9,10 @@
     "url": "https://github.com/Kiwari-Labs"
   },
   "license": "Apache-2.0",
+  "scripts": {
+    "clean": "npx hardhat clean",
+    "compile": "npx hardhat compile"
+  },
   "private": true,
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
@@ -31,5 +35,8 @@
     "ts-node": ">=8.0.0",
     "typechain": "^8.3.0",
     "typescript": ">=4.5.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.3.0"
   }
 }

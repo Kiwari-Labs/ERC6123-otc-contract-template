@@ -3,7 +3,9 @@ pragma solidity >=0.8.0 <0.9.0;
 
 /**
  * @title Address type comparator library
+ * @author Kiwari Labs
  */
+
 library AddressComparators {
     function equal(address x, address y) internal pure returns (bool) {
         assembly {
@@ -28,7 +30,7 @@ library AddressComparators {
             return(m, 0x20)
         }
     }
-    
+
     function isNotZeroAddress(address x) internal pure returns (bool) {
         assembly {
             let m := mload(0x40)

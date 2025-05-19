@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-/// @title General Token Amount Agreement
-/// @notice This contract serves as a template for creating bilateral agreements based on token amounts.
-/// It facilitates programmable agreements between two parties involving the exchange or validation of token amounts.
-/// @author Kiwari Labs
+/** @title General Token Amount Agreement
+ * @notice This contract serves as a template for creating bilateral agreements based on token amounts.
+ * It facilitates programmable agreements between two parties involving the exchange or validation of token amounts.
+ * @author Kiwari Labs
+ */
 
-import "@kiwarilabs/contracts/libraries/utils/AddresComparator.sol";
-import "@kiwarilabs/contracts/libraries/utils/IntComparator.sol";
-import "@kiwarilabs/contracts/abstracts/AgreementTemplate.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {AddressComparators} from "../libraries/comparators/AddressComparators.sol";
+import {UIntComparators} from "../libraries/comparators/UIntComparators.sol";
+import {AbstractTradeValidator} from "../AbstractTradeValidator.sol";
 
-contract GeneralTokenAgreement is AgreementTemplate {
-    using IntComparator for uint256;
-    using AddressCompartor for address;
+contract GeneralTokenAgreement is AbstractTradeValidator {
+    using AddressComparators for address;
+    using UIntComparators for uint256;
 
     function _verifyAmountToken(
         uint inputTokenAmount,
@@ -39,24 +41,24 @@ contract GeneralTokenAgreement is AgreementTemplate {
         return contractA.equal(contractB);
     }
 
-    function _verifyAgreement(
-        bytes memory x,
-        bytes memory y
-    ) internal override returns (bool) {
+    function _validateTradeData(
+        bytes memory tradeData
+    ) internal view override returns (bool) {
         // #################### start your custom logic ####################
-        // Decode amounts and addresses from both parties
+        // decode amounts and addresses from both parties
         (
             uint amountTokenA,
             uint requiredAmountTokenB,
             address tokenA,
-            address agreementContractA
-        ) = abi.decode(x, (uint, uint, address, address));
-        (
+            address agreementContractA,
             uint amountTokenB,
             uint requiredAmountTokenA,
             address tokenB,
             address agreementContractB
-        ) = abi.decode(y, (uint, uint, address, address));
+        ) = abi.decode(
+                tradeData,
+                (uint, uint, address, address, uint, uint, address, address)
+            );
         // Verify contract addresses, token amounts, and balances
         require(
             _verifyBilateralContract(agreementContractA, agreementContractB),
@@ -68,8 +70,9 @@ contract GeneralTokenAgreement is AgreementTemplate {
             "Invalid token amounts"
         );
         require(
+            // @TODO missing parameters
             _verifyBalanceToken(amountTokenA, agreementContractA) &&
-                _verifyBalanceToken(amountTokenB, agreementContractB),
+            _verifyBalanceToken(amountTokenB, agreementContractB),
             "Invalid token balances"
         );
         // #################### end your custom logic ####################

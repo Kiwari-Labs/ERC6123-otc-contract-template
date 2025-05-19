@@ -1,8 +1,8 @@
-# bilateral-agreement-contract-template
+# ERC6123-otc-contract-template
 
 ## Overview
 
-The `bilateral-agreement-contract-template` represents a foundational framework for adopting bilateral agreement mechanisms in distributed environments. It bridges traditional contract law and its principles with programmable, self-executing agreements, commonly referred to as smart contracts. This template can serve as a guideline for constructing agreements between two parties, akin to traditional bilateral contracts, but fully integrated into DLT-based Loyalty Platform.
+The `ERC6123-otc-contract-template` represents a smart contract library for adopting `over-the-counter` trade on blockchain. It bridges traditional contract workflow and its principles with programmable, self-executing agreements, commonly referred to as smart contracts. This template can serve as a guideline for constructing OTC between two parties.
 
 ## Diagram
 
@@ -11,7 +11,7 @@ The `bilateral-agreement-contract-template` represents a foundational framework 
 ## Clone repository to development environment
 
 ``` shell
-git clone http://github.com/Kiwari-labs/bilateral-agreeement-template.git
+git clone http://github.com/Kiwari-labs/ERC6123-otc-contract-template.git
 ```
 
 ## Installing
@@ -41,42 +41,6 @@ yarn test
 ## Example build you first custom agreement
 
 <!-- Instruction / Walkthrough -->
-
-```Solidity
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
-
-/// @title Agreement Title
-/// @notice e.g. link to Term of Usage, Policies, Code of Conduct
-/// @dev describe or URL external link
-/// @custom:first_author @first_author <first_author@domain.com>
-/// @custom:second_author @second_author <second_author@domain.com>
-
-import "@kiwiarilabs/contracts/libraries/utils/AddressComparator.sol";
-import "@kiwiarilabs/contracts/libraries/utils/IntComparator.sol";
-import "@kiwairilabs/contracts/abstracts/AgreementTemplate.sol";
-
-// MUST `import ../template/AgreementTemplate.sol`, DO NOT delete `is AgreementTemplate`.
-contract AgreementLogic is AgreementTemplate {
-
-    // solc-ignore-next-line func-mutability
-    function _verifyAgreement(
-        bytes memory x,
-        bytes memory y
-    ) internal override returns (bool) {
-        // #################### start your custom logic ####################
-        // decoding data from bytes to first is the address of token second is the amount of token,
-        // other for whatever additional data.
-        // abi.decode(x, (address, uint256, others);
-        // abi.decode(y, (address, uint256, others));
-        // require(_condition(x, y),"error message");
-        // ... more condition if needed
-        // #################### end your custom logic ####################
-        // do not change the line below.
-        return true;
-    }
-}
-```
 
 ## Contribute
 

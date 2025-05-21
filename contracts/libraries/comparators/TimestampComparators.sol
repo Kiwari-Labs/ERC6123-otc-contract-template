@@ -6,6 +6,7 @@ pragma solidity >=0.8.0 <0.9.0;
  * @author Kiwari Labs
  */
 
+// for L2 block.timestamp may not return actual timestamp of the network
 library TimestampComparators {
     function _isValid(uint256 unixtimestamp) private pure {
         // if timestamp before 1970-01-01T00:00:00Z revert

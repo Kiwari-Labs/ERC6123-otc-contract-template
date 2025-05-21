@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-/** @title General Token Amount Agreement
- * @notice This contract serves as a template for creating bilateral agreements based on token amounts.
+/** @title Standard Trade Agreement
+ * @notice This contract serves as a example for creating bilateral agreements based on token amounts.
  * It facilitates programmable agreements between two parties involving the exchange or validation of token amounts.
  * @author Kiwari Labs
  */
@@ -12,9 +12,21 @@ import {AddressComparators} from "../libraries/comparators/AddressComparators.so
 import {UIntComparators} from "../libraries/comparators/UIntComparators.sol";
 import {AbstractTradeValidator} from "../AbstractTradeValidator.sol";
 
-contract GeneralTokenAgreement is AbstractTradeValidator {
+contract StandardTradeAgreement is AbstractTradeValidator {
     using AddressComparators for address;
     using UIntComparators for uint256;
+
+    constructor(
+        string memory tradeDataABI,
+        string memory settlementDataABI,
+        string memory terminationTermsABI
+    )
+        AbstractTradeValidator(
+            tradeDataABI,
+            settlementDataABI,
+            terminationTermsABI
+        )
+    {}
 
     function _verifyAmountToken(
         uint inputTokenAmount,
@@ -27,7 +39,7 @@ contract GeneralTokenAgreement is AbstractTradeValidator {
         address token,
         address bilateralAgreementContract,
         uint requiredAmountToken
-    ) private pure returns (bool) {
+    ) private view returns (bool) {
         return
             (IERC20(token).balanceOf(bilateralAgreementContract)).equal(
                 requiredAmountToken
@@ -44,7 +56,6 @@ contract GeneralTokenAgreement is AbstractTradeValidator {
     function _validateTradeData(
         bytes memory tradeData
     ) internal view override returns (bool) {
-        // #################### start your custom logic ####################
         // decode amounts and addresses from both parties
         (
             uint amountTokenA,
@@ -69,14 +80,32 @@ contract GeneralTokenAgreement is AbstractTradeValidator {
                 _verifyAmountToken(amountTokenB, requiredAmountTokenB),
             "Invalid token amounts"
         );
-        require(
+        // require(
             // @TODO missing parameters
-            _verifyBalanceToken(amountTokenA, agreementContractA) &&
-            _verifyBalanceToken(amountTokenB, agreementContractB),
-            "Invalid token balances"
-        );
-        // #################### end your custom logic ####################
-        // do not change the line below.
+            // _verifyBalanceToken(amountTokenA, agreementContractA) &&
+            //     _verifyBalanceToken(amountTokenB, agreementContractB),
+            // "Invalid token balances"
+        // );
+        
         return true;
+    }
+
+    function _validateSettlementData(bytes memory settlementData) internal override view returns (bool) {
+        // @TODO
+        // require(block.number.before(deadline));
+        
+        return true;
+    }
+
+    function _validateTerminationTerms(bytes memory terminationTerms) internal override view returns (bool) {
+        // @TODO
+        // require(block.number.before(deadline));
+        
+        return true;
+    }
+
+    /** */
+    function getValue(bytes memory settlementData) external view returns (uint256, uint256) {
+        return (0, 0);
     }
 }

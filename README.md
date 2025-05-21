@@ -2,13 +2,13 @@
 
 ## Overview
 
-The `ERC6123-otc-contract-template` represents a smart contract library for adopting `over-the-counter` trade on blockchain. It bridges traditional contract workflow and its principles with programmable, self-executing agreements, commonly referred to as smart contracts. This template can serve as a guideline for constructing OTC between two parties.
+The `ERC6123-otc-contract-template` represents a smart contract library for adopting `over-the-counter`or `OTC` trade on blockchain. It bridges traditional contract workflow and its principles with programmable, self-executing agreements, commonly referred to as smart contracts. This template can serve as a guideline for constructing `OTC` trade of `ERC-20` between two parties.
 
-## Diagram
+## Sequence Diagram
 
-<!-- TODO png or mermaid -->
+<!-- sequence diagram -->
 
-## Clone repository to development environment
+## Cloning
 
 ``` shell
 git clone http://github.com/Kiwari-labs/ERC6123-otc-contract-template.git
@@ -22,7 +22,7 @@ To install all necessary packages and dependencies in the project, run the comma
 yarn install
 ```
 
-## Compile the code
+## Compiling
 
 To compile the smart contracts, run the command
 
@@ -38,9 +38,14 @@ To run the tests and ensure that the contracts behave as expected, run the comma
 yarn test
 ```
 
-## Example build you first custom agreement
+## Guideline
 
-<!-- Instruction / Walkthrough -->
+
+## Custom Trade Validator Logic
+
+``` solidity
+// @TODO example solidity code
+```
 
 ## Contribute
 

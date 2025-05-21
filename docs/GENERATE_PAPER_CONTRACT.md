@@ -1,4 +1,4 @@
-### General Token Amount Agreement 
+### Standard Trade Agreement 
 Parties Involved:
 
 `Party A`: [Name/Address] Contact: [Email/Phone]  
@@ -55,24 +55,24 @@ No amendments to this agreement will be effective unless executed through an upd
 
 ### 8. Termination
 This agreement may be terminated under the following conditions:
-
 Failure of either party to meet the required token balance.
 Breach of the contract terms.
 Mutual agreement between both parties to terminate the contract.
+
 ### 9. Miscellaneous
 This agreement represents the entire understanding between the parties regarding the subject matter and supersedes all prior agreements, communications, and understandings.
 
-By agreeing to the terms herein, both `Party A` and `Party B` commit to abide by the rules and procedures encoded in the General Token Amount Agreement smart contract.
+By agreeing to the terms herein, both `Party A` and `Party B` commit to abide by the rules and procedures encoded in the Standard Trade Agreement smart contract.
 
 Signatures:
 
 `Party A`:
 [Name/Signature/Date] or
-[DigitalSignature]
+[Digital-Signature]
 
 `Party B`:
 [Name/Signature/Date] or
-[DigitalSignature]
+[Digital-Signature]
 
 ---
-This document is a human-readable interpretation of the [General Token Amount Agreement smart contract](./contracts/examples//TokenAmountAgreement.sol). All verification and execution logic will be handled by the contract code itself, ensuring trust and transparency in the agreement between the two parties.
+This document is a human-readable interpretation of the [Standard Trade Agreement](./contracts/examples/StandardTradeAgreement.sol) contract source code. All verification and execution logic will be handled by the contract code itself, ensuring trust and transparency in the agreement between the two parties.

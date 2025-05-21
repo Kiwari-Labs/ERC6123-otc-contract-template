@@ -21,4 +21,13 @@ interface ITradeValidator {
      * @param terminationTerms payload
      */
     function validateTerminationTerms(bytes memory terminationTerms) external view returns (bool);
+
+    /** */
+    function tradeDataABI() external view returns (string memory);
+
+    /** */
+    function settlementDataABI() external view returns (string memory);
+
+    /** */
+    function terminationTermsABI() external view returns (string memory);
 }

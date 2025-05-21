@@ -6,6 +6,7 @@ pragma solidity >=0.8.0 <0.9.0;
  * @author Kiwari Labs
  */
 
+// for L2 block.number may not return actual block number of the network
 library BlockNumberComparators {
     function isBlockInPast(uint256 blockNumber) internal view returns (bool) {
         return block.number >= blockNumber;
@@ -22,6 +23,4 @@ library BlockNumberComparators {
     function isBlockAfter(uint256 blockNumber, uint256 targetBlockNumber) internal pure returns (bool) {
         return blockNumber > targetBlockNumber;
     }
-
-    // compare {-1, 0, 1}
 }

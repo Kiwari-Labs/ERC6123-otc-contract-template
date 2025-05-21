@@ -51,6 +51,12 @@ interface IERC6123 {
         string memory settlementData
     ) external;
 
+    function afterTransfer(
+        bool success,
+        uint256 transactionID,
+        string memory transactionData
+    ) external;
+
     event TradeIncepted(
         address indexed initiator,
         string indexed tradeId,

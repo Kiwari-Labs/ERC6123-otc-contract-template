@@ -31,7 +31,7 @@ library UIntComparators {
         }
     }
 
-    function greaterThanOrEqualTo (uint256 x, uint256 y) internal pure returns (bool) {
+    function greaterThanOrEqualTo(uint256 x, uint256 y) internal pure returns (bool) {
         assembly {
             let m := mload(0x40)
             if gt(x, y) {

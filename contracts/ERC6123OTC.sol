@@ -137,8 +137,6 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         address initiator,
         address withParty,
         string memory tradeData,
-        int position,
-        int paymentAmount,
         string memory initialSettlementData
     ) private returns (string memory) {
         return
@@ -194,14 +192,14 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
             initiator,
             withParty,
             tradeData,
-            position,
-            paymentAmount,
             initialSettlementData
         );
 
         _pendingRequests[tradeId] = withParty;
-        _tradeState = TRADE_STATE.INCEPTED;
+        // keccak256 again cause tradeId indexed
+        _tradeId = tradeId;
         _tradeData = tradeData;
+        _tradeState = TRADE_STATE.INCEPTED;
         _stampBlockNumber();
 
         emit TradeIncepted(initiator, tradeId, tradeData);
@@ -230,8 +228,6 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
             withParty,
             confirmer,
             tradeData,
-            position,
-            paymentAmount,
             initialSettlementData
         );
         if (_pendingRequests[tradeId] != confirmer) {
@@ -268,8 +264,6 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
             initiator,
             withParty,
             tradeData,
-            position,
-            paymentAmount,
             initialSettlementData
         );
         if (!tradeId.equal(_tradeId)) {

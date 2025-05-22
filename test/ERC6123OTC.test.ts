@@ -1,7 +1,15 @@
 import { expect } from "chai";
 import { ethers, hardhat_reset } from "./utils.test";
-import { token } from "../typechain-types/@openzeppelin/contracts";
-import { parseEther } from "ethers";
+import {
+  AbiCoder,
+  id,
+  isHexString,
+  keccak256,
+  parseEther,
+  toBeHex,
+  toUtf8Bytes,
+} from "ethers";
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 // import { ERC20, constants } from "../../../constant.test";
 
 describe("ERC6123OTC", async function () {
@@ -13,16 +21,19 @@ describe("ERC6123OTC", async function () {
   let accounts: any;
 
   // constant abi for trade validator
-  const tradeDataABI = "";
+  const tradeDataABI = `["uint256","uint256","address"]`;
   const settlementDataABI = "";
   const terminationTermsABI = "";
 
   // pre calculate tradeId 0
-  const preCalculateTradeId = "";
+  const preCalculateTradeId =
+    "0xba42870e397de64dc083ba907617819d6bf1290467b168fb502d3e76866e6513";
 
   // pre encode data
-  const preEncodeTradeData = "";
-  const preEncodeSettleData = "";
+  const preEncodeTradeData =
+    "0x00000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000007d0000000000000000000000000cf7ed3acca5a467e9e704c703e8d87f634fb0fc9";
+
+  const preEncodeSettleData: string = "settlement";
 
   afterEach(async function () {
     await hardhat_reset();
@@ -35,38 +46,73 @@ describe("ERC6123OTC", async function () {
       "MockTradeValidator"
     );
     const mockOTCContract = await ethers.getContractFactory("MockERC6123OTC");
-    // deploy mock ERC-20 token contract
-    tokenA = await mockTokenContract.deploy("");
-    tokenB = await mockTokenContract.deploy("");
+    // // deploy mock ERC-20 token contract
+    tokenA = await mockTokenContract.connect(accounts[0]).deploy();
+    tokenB = await mockTokenContract.connect(accounts[0]).deploy();
     await tokenA.waitForDeployment();
     await tokenB.waitForDeployment();
 
-    // deploy mock trade validator contract
-    tradeValidator = await mockTradeValidator.deploy();
+    // // deploy mock trade validator contract
+    tradeValidator = await mockTradeValidator
+      .connect(accounts[0])
+      .deploy(tradeDataABI, settlementDataABI, terminationTermsABI);
     await tradeValidator.waitForDeployment();
 
-    // deploy mock ERC-6123 OTC contract
-    otc = await mockOTCContract.deploy();
+    // // deploy mock ERC-6123 OTC contract
+    otc = await mockOTCContract
+      .connect(accounts[0])
+      .deploy(
+        accounts[1].address,
+        accounts[2].address,
+        await tokenA.getAddress(),
+        await tokenB.getAddress()
+      );
     await otc.waitForDeployment();
 
-    // mint tokenA to account 1
+    // // mint tokenA to account 1
     await tokenA.mint(accounts[1], amount);
-    // account 1 approve tokenA to otc contract
-    await tokenA.connect(accounts[1]).approve(otc, amount);
-    // mint tokenB to account 2
-    await tokenB.mint(accounts[2], amount);
-    // account 2 approve tokenB to otc contract
-    await tokenA.connect(accounts[2]).approve(otc, amount);
+    // // account 1 approve tokenA to otc contract
+    // await tokenA.connect(accounts[1]).approve(otc, amount);
+    // // mint tokenB to account 2
+    // await tokenB.mint(accounts[2], amount);
+    // // account 2 approve tokenB to otc contract
+    // await tokenA.connect(accounts[2]).approve(otc, amount);
+  });
+
+  it("pre-encoder check", async function () {
+    const abiCoder = AbiCoder.defaultAbiCoder();
+    const OTCContractAddress = await otc.getAddress();
+    console.log(
+      abiCoder.encode(
+        ["uint256", "uint256", "address"],
+        [1000, 2000, OTCContractAddress]
+      )
+    );
+    console.log(accounts[1].address);
+    console.log(accounts[2].address);
+    console.log(
+      "tradeId",
+      keccak256(
+        abiCoder.encode(
+          ["address", "address", "string", "string", "uint256", "uint256"],
+          [
+            accounts[1].address,
+            accounts[2].address,
+            preEncodeTradeData,
+            preEncodeSettleData,
+            0n,
+            31337n,
+          ]
+        )
+      )
+    );
   });
 
   it("[SUCCESS] trade incepted", async function () {
-    // encode payload
-
-    // expect event
     await expect(
       otc
         .connect(accounts[1])
-        .tradeIncepted(
+        .inceptTrade(
           accounts[2].address,
           preEncodeTradeData,
           0,
@@ -75,11 +121,14 @@ describe("ERC6123OTC", async function () {
         )
     )
       .to.emit(otc, "TradeIncepted")
-      .withArgs();
-
+      .withArgs(
+        accounts[1].address,
+        anyValue,
+        anyValue
+      );
     // expect value
     expect(await otc.tradeCount()).to.equal(0); // no finished trade
-    expect(await otc.tradeId().to.equal());
+    expect(await otc.tradeId()).to.equal(preCalculateTradeId);
     expect(await otc.tradeState()).to.equal(1);
     expect(await otc.tradeData()).to.equal(preEncodeTradeData);
   });

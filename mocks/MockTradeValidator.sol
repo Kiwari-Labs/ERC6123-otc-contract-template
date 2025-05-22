@@ -12,7 +12,7 @@ import {UIntComparators} from "../contracts/libraries/comparators/UIntComparator
 import {IERC6123OTC} from "../contracts/interfaces/ERC6123/extensions/IERC6123OTC.sol";
 import {AbstractTradeValidator} from "../contracts/AbstractTradeValidator.sol";
 
-contract StandardTradeValidator is AbstractTradeValidator {
+contract MockTradeValidator is AbstractTradeValidator {
     using AddressComparators for address;
     using BlockNumberComparators for uint256;
     using UIntComparators for uint256;

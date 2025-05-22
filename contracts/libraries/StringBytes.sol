@@ -9,7 +9,7 @@ pragma solidity >=0.8.0 <0.9.0;
 library StringBytes {
     function parseHexStringToBytes(
         string memory input
-    ) public pure returns (bytes memory result) {
+    ) internal pure returns (bytes memory result) {
         assembly {
             let str := add(input, 0x20) // skip length field of string
             let strLen := mload(input)

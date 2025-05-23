@@ -21,44 +21,23 @@ contract MockTradeValidator is AbstractTradeValidator {
         string memory tradeDataABI,
         string memory settlementDataABI,
         string memory terminationTermsABI
-    )
-        AbstractTradeValidator(
-            tradeDataABI,
-            settlementDataABI,
-            terminationTermsABI
-        )
-    {}
+    ) AbstractTradeValidator(tradeDataABI, settlementDataABI, terminationTermsABI) {}
 
     /**
      * @return bool
      */
-    function _checkAllowance(
-        address token,
-        address owner,
-        address OTCContract,
-        uint256 requiredAmountToken
-    ) private view returns (bool) {
+    function _checkAllowance(address token, address owner, address OTCContract, uint256 requiredAmountToken) private view returns (bool) {
         return
-            IERC20(token).balanceOf(owner).greaterThanOrEqualTo(
-                requiredAmountToken
-            ) &&
-            IERC20(token).allowance(owner, OTCContract).greaterThanOrEqualTo(
-                requiredAmountToken
-            );
+            IERC20(token).balanceOf(owner).greaterThanOrEqualTo(requiredAmountToken) &&
+            IERC20(token).allowance(owner, OTCContract).greaterThanOrEqualTo(requiredAmountToken);
     }
 
     /**
      * @return bool
      */
-    function _validateTradeData(
-        bytes memory tradeData
-    ) internal view override returns (bool) {
+    function _validateTradeData(bytes memory tradeData) internal view override returns (bool) {
         // decode amounts and addresses from both parties
-        (
-            uint256 partyAGetTokenB,
-            uint256 partyBGetTokenA,
-            address OTCContract
-        ) = abi.decode(tradeData, (uint, uint, address));
+        (uint256 partyAGetTokenB, uint256 partyBGetTokenA, address OTCContract) = abi.decode(tradeData, (uint, uint, address));
 
         // variable
         address partyA = IERC6123OTC(OTCContract).partyA();
@@ -67,14 +46,8 @@ contract MockTradeValidator is AbstractTradeValidator {
         address tokenB = IERC6123OTC(OTCContract).tokenB();
 
         // condition
-        require(
-            _checkAllowance(tokenA, partyA, OTCContract, partyBGetTokenA),
-            ""
-        );
-        require(
-            _checkAllowance(tokenB, partyB, OTCContract, partyAGetTokenB),
-            ""
-        );
+        require(_checkAllowance(tokenA, partyA, OTCContract, partyBGetTokenA), "");
+        require(_checkAllowance(tokenB, partyB, OTCContract, partyAGetTokenB), "");
 
         return true;
     }
@@ -82,28 +55,24 @@ contract MockTradeValidator is AbstractTradeValidator {
     /**
      * @return bool
      */
-    function _validateSettlementData(
-        bytes memory settlementData
-    ) internal view override returns (bool) {
-        return settlementData.length == 1 && settlementData[0] == 0x01;
+    function _validateSettlementData(bytes memory settlementData) internal view override returns (bool) {
+        // skip validate by decode input
+        return abi.decode(settlementData, (bool));
     }
 
     /**
      * @return bool
      */
-    function _validateTerminationTerms(
-        bytes memory terminationTerms
-    ) internal view override returns (bool) {
-        return terminationTerms.length == 1 && terminationTerms[0] == 0x01;
+    function _validateTerminationTerms(bytes memory terminationTerms) internal view override returns (bool) {
+        // skip validate by decode input
+        return abi.decode(terminationTerms, (bool));
     }
 
     /**
      * @return uint256
      * @return uint256
      */
-    function getValue(
-        bytes memory settlementData
-    ) external view returns (uint256, uint256) {
+    function getValue(bytes memory settlementData) external view returns (uint256, uint256) {
         (uint256 a, uint256 b) = abi.decode(settlementData, (uint, uint));
 
         return (a, b);

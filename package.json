@@ -13,7 +13,9 @@
     "clean": "npx hardhat clean",
     "compile": "npx hardhat compile",
     "coverage": "npx hardhat coverage",
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "prettier:sol": "prettier --write --plugin=prettier-plugin-solidity '**/*.sol'",
+    "prettier:ts": "prettier --write '**/*.ts'"
   },
   "private": true,
   "devDependencies": {
@@ -33,6 +35,9 @@
     "ethers": "^6.4.0",
     "hardhat": "^2.22.10",
     "hardhat-gas-reporter": "^1.0.8",
+    "prettier": "^3.5.3",
+    "prettier-package-json": "^2.8.0",
+    "prettier-plugin-solidity": "^2.0.0",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typechain": "^8.3.0",

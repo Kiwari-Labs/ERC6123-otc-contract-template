@@ -7,33 +7,22 @@ pragma solidity >=0.8.0 <0.9.0;
  */
 
 library StringBytes {
-    function parseHexStringToBytes(
-        string memory input
-    ) internal pure returns (bytes memory result) {
+    function parseHexStringToBytes(string memory input) internal pure returns (bytes memory result) {
         assembly {
             let str := add(input, 0x20) // skip length field of string
             let strLen := mload(input)
 
             // Require length >= 2
             if lt(strLen, 2) {
-                mstore(
-                    0x00,
-                    0x4d757374207374617274207769746820307800000000000000000000000000
-                ) // "Must start with 0x"
+                mstore(0x00, 0x4d757374207374617274207769746820307800000000000000000000000000) // "Must start with 0x"
                 revert(0x00, 0x20)
             }
 
             // Check prefix '0' and 'x' or 'X'
             let c0 := byte(0, mload(str))
             let c1 := byte(0, mload(add(str, 1)))
-            if or(
-                iszero(eq(c0, 0x30)),
-                iszero(or(eq(c1, 0x78), eq(c1, 0x58)))
-            ) {
-                mstore(
-                    0x00,
-                    0x4d757374207374617274207769746820307800000000000000000000000000
-                ) // "Must start with 0x"
+            if or(iszero(eq(c0, 0x30)), iszero(or(eq(c1, 0x78), eq(c1, 0x58)))) {
+                mstore(0x00, 0x4d757374207374617274207769746820307800000000000000000000000000) // "Must start with 0x"
                 revert(0x00, 0x20)
             }
 
@@ -41,10 +30,7 @@ library StringBytes {
 
             // Check even length after "0x"
             if mod(hexLen, 2) {
-                mstore(
-                    0x00,
-                    0x486578206c656e677468206d757374206265206576656e000000000000000000
-                ) // "Hex length must be even"
+                mstore(0x00, 0x486578206c656e677468206d757374206265206576656e000000000000000000) // "Hex length must be even"
                 revert(0x00, 0x20)
             }
 
@@ -59,11 +45,7 @@ library StringBytes {
             let src := add(str, 2)
             let end := add(src, hexLen)
 
-            for {
-
-            } lt(src, end) {
-
-            } {
+            for {} lt(src, end) {} {
                 // Load two chars, convert each to nibble and combine
                 let hi := fromHexChar(byte(0, mload(src)))
                 let lo := fromHexChar(byte(0, mload(add(src, 1))))

@@ -19,11 +19,7 @@ abstract contract AbstractTradeValidator is ITradeValidator {
     // string private URI_CONTRACT_PAPER;
     // string private URI_AUDIT_REPORT;
 
-    constructor(
-        string memory tradeDataABI,
-        string memory settlementDataABI,
-        string memory terminationTermsABI
-    ) {
+    constructor(string memory tradeDataABI, string memory settlementDataABI, string memory terminationTermsABI) {
         TRADE_DATA_ABI_ENCODE = tradeDataABI;
         SETTLEMENT_DATA_ABI_ENCODE = settlementDataABI;
         TERMINATION_TERMS_ABI_ENCODE = terminationTermsABI;
@@ -32,31 +28,22 @@ abstract contract AbstractTradeValidator is ITradeValidator {
     /**
      * @dev See {ITradeValidator-validateTradeData}.
      */
-    function validateTradeData(
-        bytes memory tradeData
-    ) external view override returns (bool) {
-        require(_validateTradeData(tradeData));
-        return true;
+    function validateTradeData(bytes memory tradeData) external view override returns (bool) {
+        return _validateTradeData(tradeData);
     }
 
     /**
      * @dev See {ITradeValidator-validateSettlementData}.
      */
-    function validateSettlementData(
-        bytes memory settlementData
-    ) external view override returns (bool) {
-        require(_validateSettlementData(settlementData));
-        return true;
+    function validateSettlementData(bytes memory settlementData) external view override returns (bool) {
+        return _validateSettlementData(settlementData);
     }
 
     /**
      * @dev See {ITradeValidator-validateTerminationTerms}.
      */
-    function validateTerminationTerms(
-        bytes memory terminationTerms
-    ) external view override returns (bool) {
-        require(_validateTerminationTerms(terminationTerms));
-        return true;
+    function validateTerminationTerms(bytes memory terminationTerms) external view override returns (bool) {
+        return _validateTerminationTerms(terminationTerms);
     }
 
     /**
@@ -69,51 +56,35 @@ abstract contract AbstractTradeValidator is ITradeValidator {
     /**
      * @dev See {ITradeValidator-settlementDataABI}.
      */
-    function settlementDataABI()
-        external
-        view
-        override
-        returns (string memory)
-    {
+    function settlementDataABI() external view override returns (string memory) {
         return SETTLEMENT_DATA_ABI_ENCODE;
     }
 
     /**
      * @dev See {ITradeValidator-terminationTermsABI}.
      */
-    function terminationTermsABI()
-        external
-        view
-        override
-        returns (string memory)
-    {
+    function terminationTermsABI() external view override returns (string memory) {
         return TERMINATION_TERMS_ABI_ENCODE;
     }
 
     /**
      * @dev abstract function
      */
-    function _validateTradeData(
-        bytes memory tradeData
-    ) internal view virtual returns (bool) {
+    function _validateTradeData(bytes memory tradeData) internal view virtual returns (bool) {
         // validation logic here.
     }
 
     /**
      * @dev abstract function
      */
-    function _validateSettlementData(
-        bytes memory settlementData
-    ) internal view virtual returns (bool) {
+    function _validateSettlementData(bytes memory settlementData) internal view virtual returns (bool) {
         // validation logic here.
     }
 
     /**
      * @dev abstract function
      */
-    function _validateTerminationTerms(
-        bytes memory terminationTerms
-    ) internal view virtual returns (bool) {
+    function _validateTerminationTerms(bytes memory terminationTerms) internal view virtual returns (bool) {
         // validation logic here.
     }
 }

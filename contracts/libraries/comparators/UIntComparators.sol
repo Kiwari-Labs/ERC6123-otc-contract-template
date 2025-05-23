@@ -2,7 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 /**
- * @title Uint256 type comparator 
+ * @title Uint256 type comparator
  * @author Kiwari Labs
  */
 
@@ -45,7 +45,7 @@ library UIntComparators {
             return(m, 0x20)
         }
     }
-    
+
     function lessThan(uint x, uint256 y) internal pure returns (bool) {
         assembly {
             let m := mload(0x40)
@@ -73,7 +73,7 @@ library UIntComparators {
         assembly {
             let m := mload(0x40)
             mstore(m, iszero(x))
-            return (m, 0x20)
+            return(m, 0x20)
         }
     }
 
@@ -81,7 +81,7 @@ library UIntComparators {
         assembly {
             let m := mload(0x40)
             mstore(m, not(iszero(x)))
-            return (m, 0x20)
+            return(m, 0x20)
         }
     }
 

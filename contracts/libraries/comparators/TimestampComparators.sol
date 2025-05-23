@@ -12,7 +12,7 @@ library TimestampComparators {
         // if timestamp before 1970-01-01T00:00:00Z revert
         assembly {
             if iszero(unixtimestamp) {
-                // mstore(0x00, 0x00) // revert message 
+                // mstore(0x00, 0x00) // revert message
                 revert(0x00, 0x20)
             }
         }

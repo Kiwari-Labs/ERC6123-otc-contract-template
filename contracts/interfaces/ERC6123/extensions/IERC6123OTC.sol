@@ -6,7 +6,7 @@ import {IERC6123} from "../IERC6123.sol";
 interface IERC6123OTC is IERC6123 {
     /** @return address */
     function partyA() external view returns (address);
-    
+
     /** @return address */
     function partyB() external view returns (address);
 

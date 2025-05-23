@@ -6,7 +6,7 @@ The `ERC6123-otc-contract-template` represents a smart contract library for adop
 
 ## Sequence Diagram
 
-<!-- sequence diagram -->
+<!-- TODO sequence diagram -->
 
 ## Cloning
 
@@ -40,12 +40,15 @@ yarn test
 
 ## Guideline
 
-
 ## Custom Trade Validator Logic
 
 ``` solidity
 // @TODO example solidity code
 ```
+
+## Events and Histories
+
+This implementation doesn't store the full history on-chain. However, you can retrieve past events efficiently using filters. Use `DEPLOYED_BLOCKNUMBER` to get the starting block, and `LASTSEEN_BLOCKNUMBER` for the latest block the contract interacted with.
 
 ## Contribute
 

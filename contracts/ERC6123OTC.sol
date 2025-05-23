@@ -25,10 +25,10 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
     using StringBytes for string;
 
     enum TRADE_DATA_FORMAT {
-        BYTES,
+        BYTES, // encode data with abi encode
         JSON,
         XML,
-        URI // can stored off-chain
+        URI // the data stored off-chain
     }
 
     enum TRADE_STATE {
@@ -40,8 +40,10 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         SETTLED /** 5 */,
         IN_TERMINATED /** 6 */,
         TERMINATED
-     /** 7 */}
+    }
+    /** 7 */
 
+    /** storage layout */
     address private _partyA;
     address private _partyB;
 
@@ -60,10 +62,22 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
 
     uint256 private _counter;
 
+    /** custom errors */
     error ERC6123InvalidPartyAddress();
     error ERC6123InvalidTradeState(uint8 current, uint8 expected);
     error ERC6123TradeValidatorValidateFailed(string state);
 
+    /** additional errors revert code
+     *  all this error will not inherit to the implementation contract.
+     * "0x05da3924" from bytes4(keccak256("self trade is not allowed"));
+     * "0xb01ec053" from bytes4(keccak256("self confirm is not allowed"));
+     * "0xe36270fc" from bytes4(keccak256("position greater than 0 not allowed"));
+     * "0x9d7c8c0e" from bytes4(keccak256("paymentAmount greater than 0 not allowed"));
+     * "0xfca1be26" from bytes4(keccak256("afterTransfer not implemented"));
+     * "0xa1b843d9" from bytes4(keccak256("trade id not exists"));
+     */
+
+    /** events */
     event TradeValidatorChanged(address oldImplementation, address newImplementation);
 
     modifier whenTradeInactive() {
@@ -116,6 +130,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         _tokenB = tokenB;
     }
 
+    // @TODO NatSpec comment
     function _requireState(uint8 expected) private {
         uint8 current = uint8(_tradeState);
         if (current != expected) {
@@ -123,6 +138,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         }
     }
 
+    // @TODO NatSpec comment
     function _calculateTradeId(
         address initiator,
         address withParty,
@@ -133,6 +149,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
             uint256(keccak256(abi.encode(initiator, withParty, tradeData, initialSettlementData, _counter, block.chainid))).toHexString();
     }
 
+    // @TODO NatSpec comment
     function _updateTradeValidator(ITradeValidator implementation) internal {
         if (address(implementation) == address(0)) {
             revert();
@@ -143,6 +160,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit TradeValidatorChanged(oldImplementation, address(implementation));
     }
 
+    // @TODO NatSpec comment
     function inceptTrade(
         address withParty,
         string memory tradeData,
@@ -151,19 +169,13 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         string memory initialSettlementData
     ) external virtual override onlyInvolvedParty whenTradeInactive returns (string memory) {
         address initiator = msg.sender;
-        if (initiator == withParty) {
-            revert("trade with themselves not allowed");
-        }
-        if (position != 0) {
-            revert("position greater than 0 not allowed");
-        }
-        if (paymentAmount != 0) {
-            revert("position greater than 0 not allowed");
-        }
-        string memory tradeId = _calculateTradeId(initiator, withParty, tradeData, initialSettlementData);
+        if (initiator == withParty) revert("0x05da3924");
+        if (position != 0) revert("0xe36270fc");
+        if (paymentAmount != 0) revert("0x9d7c8c0e");
 
+        string memory tradeId = _calculateTradeId(initiator, withParty, tradeData, initialSettlementData);
         _pendingRequests[tradeId] = withParty;
-        // keccak256 again cause tradeId indexed
+
         _tradeId = tradeId;
         _tradeData = tradeData;
         _tradeState = TRADE_STATE.INCEPTED;
@@ -174,6 +186,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         return tradeId;
     }
 
+    // @TODO NatSpec comment
     function confirmTrade(
         address withParty,
         string memory tradeData,
@@ -182,19 +195,13 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         string memory initialSettlementData
     ) external virtual override onlyInvolvedParty whenTradeIncepted {
         address confirmer = msg.sender;
-        if (confirmer == withParty) {
-            revert("trade with themselves not allowed");
-        }
-        if (position != 0) {
-            revert("position greater than 0 not allowed");
-        }
-        if (paymentAmount != 0) {
-            revert("position greater than 0 not allowed");
-        }
+        if (confirmer == withParty) revert("0x05da3924");
+        if (position != 0) revert("0xe36270fc");
+        if (paymentAmount != 0) revert("0x9d7c8c0e");
+
         string memory tradeId = _calculateTradeId(withParty, confirmer, tradeData, initialSettlementData);
-        if (_pendingRequests[tradeId] != confirmer) {
-            revert("self confirm is not allowed");
-        }
+        if (_pendingRequests[tradeId] != confirmer) revert("0xb01ec053");
+
         // function call trade validator contract for checking trade data meet the requirement.
         bytes memory parsedTradeData = tradeData.parseHexStringToBytes();
         bytes memory parsedInitialSettlementData = initialSettlementData.parseHexStringToBytes();
@@ -211,6 +218,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit TradeConfirmed(confirmer, tradeId);
     }
 
+    // @TODO NatSpec comment
     function cancelTrade(
         address withParty,
         string memory tradeData,
@@ -220,9 +228,8 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
     ) external virtual override onlyInvolvedParty whenTradeIncepted {
         address initiator = msg.sender;
         string memory tradeId = _calculateTradeId(initiator, withParty, tradeData, initialSettlementData);
-        if (!tradeId.equal(_tradeId)) {
-            revert("trade id not exists");
-        }
+        if (!tradeId.equal(_tradeId)) revert("0xa1b843d9");
+
         bytes memory parsedTradeData = tradeData.parseHexStringToBytes();
         bytes memory parsedInitialSettlementData = initialSettlementData.parseHexStringToBytes();
         if (!_tradeValidator.validateTradeData(parsedTradeData)) {
@@ -232,6 +239,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
             revert ERC6123TradeValidatorValidateFailed("init-settlement-data");
         }
 
+        // perform clear storage
         delete _tradeId;
         delete _tradeData;
         delete _tradeState;
@@ -244,6 +252,11 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit TradeCanceled(initiator, tradeId);
     }
 
+    /**
+     * @param tradeId trade id
+     * @param terminationPayment termination payment
+     * @param terminationTerms encoded payload data
+     */
     function requestTradeTermination(
         string memory tradeId,
         int256 terminationPayment,
@@ -258,6 +271,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         if (!_tradeValidator.validateTerminationTerms(parsedTerminationTerms)) {
             revert ERC6123TradeValidatorValidateFailed("termination-terms");
         }
+
         _terminationTerms = terminationTerms;
         _requestTerminatedAt = _tradeState;
         _tradeState = TRADE_STATE.IN_TERMINATED;
@@ -266,7 +280,11 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit TradeTerminationRequest(initiator, tradeId, terminationPayment, terminationTerms);
     }
 
-    /** */
+    /**
+     * @param tradeId trade id
+     * @param terminationPayment termination payment
+     * @param terminationTerms encoded payload data
+     */
     function confirmTradeTermination(
         string memory tradeId,
         int256 terminationPayment,
@@ -274,18 +292,19 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
     ) external virtual override onlyInvolvedParty whenInTerminated {
         address confirmer = msg.sender;
         string memory terminationTradeId = uint256(keccak256(abi.encode(tradeId, "termination"))).toHexString();
-        if (_pendingRequests[terminationTradeId] != confirmer) {
-            revert("self confirm is not allowed");
-        }
+        if (_pendingRequests[terminationTradeId] != confirmer) revert("0xb01ec053");
         bytes memory parsedTerminationTerms = terminationTerms.parseHexStringToBytes();
         if (!_tradeValidator.validateTerminationTerms(parsedTerminationTerms)) {
             revert ERC6123TradeValidatorValidateFailed("termination-terms");
         }
+
+        // perform clear storage
         delete _pendingRequests[terminationTradeId];
         delete _terminationTerms;
         delete _tradeId;
         delete _tradeData;
 
+        // if the request to terminate at incepted status will be terminated this contract.
         if (_requestTerminatedAt == TRADE_STATE.INCEPTED) {
             _tradeState = TRADE_STATE.TERMINATED;
         } else {
@@ -301,6 +320,11 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit TradeTerminated("reason");
     }
 
+    /**
+     * @param tradeId trade id
+     * @param terminationPayment termination payment
+     * @param terminationTerms encoded payload data
+     */
     function cancelTradeTermination(
         string memory tradeId,
         int256 terminationPayment,
@@ -309,9 +333,8 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         address confirmer = msg.sender;
         address responder = confirmer == _partyA ? _partyB : _partyA;
         string memory terminationTradeId = uint256(keccak256(abi.encode(tradeId, "termination"))).toHexString();
-        if (_pendingRequests[terminationTradeId] != confirmer) {
-            revert("self confirm is not allowed");
-        }
+        if (_pendingRequests[terminationTradeId] != confirmer) revert("0xb01ec053");
+
         bytes memory parsedTerminationTerms = terminationTerms.parseHexStringToBytes();
         if (!_tradeValidator.validateTerminationTerms(parsedTerminationTerms)) {
             revert ERC6123TradeValidatorValidateFailed("termination-terms");
@@ -324,6 +347,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit TradeTerminationCanceled(confirmer, tradeId, terminationTerms);
     }
 
+    // @TODO NatSpec comment
     function initiateSettlement() external virtual override onlyInvolvedParty whenConfirmed {
         address initiator = msg.sender;
         address responder = initiator == _partyA ? _partyB : _partyA;
@@ -336,24 +360,24 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         emit SettlementRequested(initiator, _tradeData, "");
     }
 
+    // @TODO NatSpec comment
     function performSettlement(
         int256 settlementAmount,
         string memory settlementData
     ) external virtual override onlyInvolvedParty whenValuation {
         address initiator = msg.sender;
-        if (_pendingRequests[_tradeId] != initiator) {
-            revert("self confirm is not allowed");
-        }
+        if (_pendingRequests[_tradeId] != initiator) revert("0xb01ec053");
+
         bytes memory parseSettlementData = settlementData.parseHexStringToBytes();
         if (!_tradeValidator.validateSettlementData(parseSettlementData)) {
             revert ERC6123TradeValidatorValidateFailed("settlement-data");
         }
 
         (uint256 valueA, uint256 valueB) = IStandardTradeValidator(address(_tradeValidator)).getValue(parseSettlementData);
-
         bool txn1 = _tokenA.trySafeTransferFrom(_partyA, _partyB, valueA);
         bool txn2 = _tokenB.trySafeTransferFrom(_partyB, _partyA, valueB);
 
+        // perform clear storage
         delete _pendingRequests[_tradeId];
         delete _tradeId;
         delete _tradeData;
@@ -369,9 +393,10 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         }
     }
 
+    // @TODO NatSpec comment
     function afterTransfer(bool success, uint256 transactionId, string memory transactionData) external virtual override {
         // afterTransfer not required.
-        revert("afterTransfer not implemented");
+        revert("0xfca1be26");
     }
 
     /**

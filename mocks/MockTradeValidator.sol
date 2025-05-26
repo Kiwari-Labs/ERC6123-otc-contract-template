@@ -58,7 +58,7 @@ contract MockTradeValidator is AbstractTradeValidator {
     }
 
     function getValue(bytes memory settlementData) external view returns (uint256, uint256) {
-        (uint256 a, uint256 b) = abi.decode(settlementData, (uint, uint));
+        (uint256 a, uint256 b) = abi.decode(settlementData, (uint256, uint256));
 
         return (a, b);
     }

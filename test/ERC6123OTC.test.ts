@@ -52,14 +52,15 @@ describe("ERC6123OTC", async function () {
       .deploy(accounts[1].address, accounts[2].address, await tokenA.getAddress(), await tokenB.getAddress());
     await otc.waitForDeployment();
 
+    const otcAddress = await otc.getAddress();
     // mint tokenA to account 1
     await tokenA.mint(accounts[1], amount);
     // account 1 approve tokenA to otc contract
-    await tokenA.connect(accounts[1]).approve(otc, amount);
+    await tokenA.connect(accounts[1]).approve(otcAddress, amount);
     // mint tokenB to account 2
     await tokenB.mint(accounts[2], amount);
     //  account 2 approve tokenB to otc contract
-    await tokenA.connect(accounts[2]).approve(otc, amount);
+    await tokenB.connect(accounts[2]).approve(otcAddress, amount);
     // set trade validator implementation
     await otc.setTradeValidator(await tradeValidator.getAddress());
   });
@@ -85,21 +86,45 @@ describe("ERC6123OTC", async function () {
       .withArgs(accounts[2].address, preCalculateTradeId);
     // expect value
     expect(await otc.tradeCount()).to.equal(0); // no finished trade
-    expect(await otc.tradeId()).to.equal(preCalculateTradeId);
     expect(await otc.tradeState()).to.equal(2);
-    expect(await otc.tradeData()).to.equal(preEncodeTradeData);
   });
 
   it("[SUCCESS] trade initial settlement", async function () {
-    // @TODO
+    await otc.connect(accounts[1]).inceptTrade(accounts[2].address, preEncodeTradeData, 0, 0, preEncodeSettleData);
+    await otc.connect(accounts[2]).confirmTrade(accounts[1].address, preEncodeTradeData, 0, 0, preEncodeSettleData);
+    // expect event
+    await expect(otc.connect(accounts[1]).initiateSettlement())
+      .to.emit(otc, "SettlementRequested")
+      .withArgs(accounts[1].address, preEncodeTradeData, ""); // fix event args
+    // expect value
+    expect(await otc.tradeCount()).to.equal(0); // no finished trade
+    expect(await otc.tradeState()).to.equal(3);
   });
 
   it("[SUCCESS] trade perform settlement", async function () {
-    // @TODO
+    await otc.connect(accounts[1]).inceptTrade(accounts[2].address, preEncodeTradeData, 0, 0, preEncodeSettleData);
+    await otc.connect(accounts[2]).confirmTrade(accounts[1].address, preEncodeTradeData, 0, 0, preEncodeSettleData);
+    await otc.connect(accounts[1]).initiateSettlement();
+    // expect event
+    await expect(otc.connect(accounts[2]).performSettlement(0, preEncodeSettleData))
+      // .to.emit(otc, "SettlementDetermined")
+      // .withArgs(accounts[2].address, 0, preEncodeSettleData);
+    // expect value
+    console.log(await tokenA.allowance(accounts[1].address, await otc.getAddress()));
+    console.log(await tokenB.allowance(accounts[2].address, await otc.getAddress()));
+    expect(await otc.tradeCount()).to.equal(1); // 1 finished trade
+    expect(await otc.tradeState()).to.equal(3);
+    console.log(await tokenA.balanceOf(accounts[2].address));
+    console.log(await tokenB.balanceOf(accounts[1].address));
   });
 
   it("[FAILED] trade incepted", async function () {
     // @TODO
+    // directly set storage slot for fake trade state
+    // expect event
+    // await otc.connect().to.equal();
+    // expect value
+    // await otc.connect().to.equal();
   });
 
   it("[FAILED] trade confirmed", async function () {

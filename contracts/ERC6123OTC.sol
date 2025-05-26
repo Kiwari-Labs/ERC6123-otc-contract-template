@@ -167,7 +167,11 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         int position,
         int256 paymentAmount,
         string memory initialSettlementData
-    ) external virtual override onlyInvolvedParty whenTradeInactive returns (string memory) {
+    ) external virtual override onlyInvolvedParty returns (string memory) {
+        TRADE_STATE tradeState = _tradeState;
+        if (tradeState != TRADE_STATE.INACTIVE && tradeState != TRADE_STATE.SETTLED) {
+            revert ERC6123InvalidTradeState(uint8(tradeState), 50); // SETTLED and INACTIVE
+        }
         address initiator = msg.sender;
         if (initiator == withParty) revert("0x05da3924");
         if (position != 0) revert("0xe36270fc");
@@ -372,8 +376,9 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         if (!_tradeValidator.validateSettlementData(parseSettlementData)) {
             revert ERC6123TradeValidatorValidateFailed("settlement-data");
         }
+        bytes memory parseTradeData = _tradeData.parseHexStringToBytes();
 
-        (uint256 valueA, uint256 valueB) = IStandardTradeValidator(address(_tradeValidator)).getValue(parseSettlementData);
+        (uint256 valueA, uint256 valueB) = IStandardTradeValidator(address(_tradeValidator)).getValue(parseTradeData);
         bool txn1 = _tokenA.trySafeTransferFrom(_partyA, _partyB, valueA);
         bool txn2 = _tokenB.trySafeTransferFrom(_partyB, _partyA, valueB);
 
@@ -381,9 +386,9 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         delete _pendingRequests[_tradeId];
         delete _tradeId;
         delete _tradeData;
-        delete _tradeState;
 
         _counter++;
+        _tradeState == TRADE_STATE.INCEPTED;
         _stampBlockNumber();
 
         if (txn1 && txn2) {

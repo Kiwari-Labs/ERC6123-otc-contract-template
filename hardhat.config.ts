@@ -1,5 +1,6 @@
 import {HardhatUserConfig} from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "hardhat-storage-layout";
 import path from "path";
 
 import glob from "glob";

@@ -309,7 +309,7 @@ abstract contract ERC6123OTC is IERC6123OTC, Indexed {
         delete _tradeData;
 
         // if the request to terminate at incepted status will be terminated this contract.
-        if (_requestTerminatedAt == TRADE_STATE.INCEPTED) {
+        if (_requestTerminatedAt == TRADE_STATE.INCEPTED || ) {
             _tradeState = TRADE_STATE.TERMINATED;
         } else {
             delete _tradeState;

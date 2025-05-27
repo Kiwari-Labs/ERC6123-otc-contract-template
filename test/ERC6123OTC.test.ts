@@ -1,6 +1,7 @@
 import {expect} from "chai";
 import {ethers, hardhat_reset} from "./utils.test";
 import {parseEther} from "ethers";
+import {network} from "hardhat";
 require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 
 describe("ERC6123OTC", async function () {
@@ -106,9 +107,9 @@ describe("ERC6123OTC", async function () {
     await otc.connect(accounts[2]).confirmTrade(accounts[1].address, preEncodeTradeData, 0, 0, preEncodeSettleData);
     await otc.connect(accounts[1]).initiateSettlement();
     // expect event
-    await expect(otc.connect(accounts[2]).performSettlement(0, preEncodeSettleData))
-      // .to.emit(otc, "SettlementDetermined")
-      // .withArgs(accounts[2].address, 0, preEncodeSettleData);
+    await expect(otc.connect(accounts[2]).performSettlement(0, preEncodeSettleData));
+    // .to.emit(otc, "SettlementDetermined")
+    // .withArgs(accounts[2].address, 0, preEncodeSettleData);
     // expect value
     console.log(await tokenA.allowance(accounts[1].address, await otc.getAddress()));
     console.log(await tokenB.allowance(accounts[2].address, await otc.getAddress()));
@@ -120,7 +121,15 @@ describe("ERC6123OTC", async function () {
 
   it("[FAILED] trade incepted", async function () {
     // @TODO
-    // directly set storage slot for fake trade state
+    // directly set storage slot for fake trade state at slot 5 offset 21.
+    await network.provider.send("hardhat_setStorageAt", [
+      await otc.getAddress(),
+      "0x5",
+      "0x0000000000000000000000019fe46736679d2d9a65f0992f2272de9f3c7fa6e0",
+    ]);
+    await expect(otc.connect(accounts[1]).inceptTrade(accounts[2].address, preEncodeTradeData, 0, 0, preEncodeSettleData))
+      .to.be.revertedWithCustomError(otc, "ERC6123InvalidTradeState")
+      .withArgs(1, 50);
     // expect event
     // await otc.connect().to.equal();
     // expect value

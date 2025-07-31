@@ -5,15 +5,18 @@ pragma solidity >=0.8.0 <0.9.0;
  * @title Indexed
  * @author Kiwari Labs
  */
-
+ 
 abstract contract Indexed {
     // @TODO adopt ERC-7201 for directly call data from storage by `eth_getStorageAt` instead `eth_call`.
-    uint256 public immutable DEPLOYED_BLOCKNUMBER;
-    uint256 public LASTSEEN_BLOCKNUMBER;
+    bytes32 private DEPLOYED_BLOCKNUMBER_SLOT =  0x0;
+    bytes32 private LASTSEEN_BLOCKNUMBER_SLOT =  0x0;
+    
+    // uint256 public immutable DEPLOYED_BLOCKNUMBER;
+    // uint256 public LASTSEEN_BLOCKNUMBER;
 
     constructor() {
-        DEPLOYED_BLOCKNUMBER = _blockNumberProvider();
-        LASTSEEN_BLOCKNUMBER = _blockNumberProvider();
+        // DEPLOYED_BLOCKNUMBER = _blockNumberProvider();
+        // LASTSEEN_BLOCKNUMBER = _blockNumberProvider();
     }
 
     /**
@@ -28,6 +31,23 @@ abstract contract Indexed {
      * @dev stamp last seen block number.
      */
     function _stampBlockNumber() internal {
-        LASTSEEN_BLOCKNUMBER = _blockNumberProvider();
+        uint256 blockNumber = _blockNumberProvider();
+        assembly {
+            sstore(DEPLOYED_BLOCKNUMBER_SLOT.slot, blockNumber)
+        }
+    }
+
+    // @TODO NatSpec
+    function deployedAtBlockNumber() external view returns (uint256 blockNumber) {
+        assembly {
+            blockNumber := sload(DEPLOYED_BLOCKNUMBER_SLOT.slot)
+        }
+    }
+
+    // @TODO NatSpec
+    function latestTransactionAt() external view returns (uint256 blockNumber) {
+        assembly {
+            blockNumber := sload(LASTSEEN_BLOCKNUMBER_SLOT.slot)
+        }
     }
 }

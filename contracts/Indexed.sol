@@ -7,21 +7,37 @@ pragma solidity >=0.8.0 <0.9.0;
  */
  
 abstract contract Indexed {
-    // @TODO adopt ERC-7201 for directly call data from storage by `eth_getStorageAt` instead `eth_call`.
-    bytes32 private DEPLOYED_BLOCKNUMBER_SLOT =  0x0;
-    bytes32 private LASTSEEN_BLOCKNUMBER_SLOT =  0x0;
+    /** @custom:storage-location erc7201:indexed */
+    struct IndexedStorage {
+        uint256 deployedBlockNumber;
+        uint256 latestInteractBlockNumber;
+    }
     
-    // uint256 public immutable DEPLOYED_BLOCKNUMBER;
-    // uint256 public LASTSEEN_BLOCKNUMBER;
+    // keccak256(abi.encode(uint256(keccak256("indexed")) - 1)) & ~bytes32(uint256(0xff));
+    bytes32 private constant INDEXED_STORAGE_LOCATION = 0x8eca1f781afde2be911869090c62fb7cfdc951e1ab735da6bf694cda2bf8d600;
 
     constructor() {
-        // DEPLOYED_BLOCKNUMBER = _blockNumberProvider();
-        // LASTSEEN_BLOCKNUMBER = _blockNumberProvider();
+        uint256 blockNumber = _blockNumberProvider();
+        IndexedStorage storage $ = _getIndexedStorage();
+        $.deployedBlockNumber = blockNumber;
+        $.latestInteractBlockNumber = blockNumber;
     }
 
     /**
-     * @notice some L2 use precompiled contract to get current block number.
-     * @dev override this function if the network not use `block.number`.
+     * @notice Returns a pointer to the contract's IndexedStorage struct.
+     * @dev Uses a fixed storage slot derived from the storage location hash.
+     * @return $ A storage reference to the IndexedStorage struct.
+     */
+    function _getIndexedStorage() private pure returns (IndexedStorage storage $) {
+        assembly {
+            $.slot := INDEXED_STORAGE_LOCATION
+        }
+    }
+
+    /**
+     * @notice Some L2s use a precompiled contract to get the current block number.
+     * @dev Override this function if the network does not use `block.number`.
+     * @return The current block number, either native or overridden.
      */
     function _blockNumberProvider() internal view virtual returns (uint256) {
         return block.number;
@@ -31,23 +47,23 @@ abstract contract Indexed {
      * @dev stamp last seen block number.
      */
     function _stampBlockNumber() internal {
-        uint256 blockNumber = _blockNumberProvider();
-        assembly {
-            sstore(DEPLOYED_BLOCKNUMBER_SLOT.slot, blockNumber)
-        }
+        IndexedStorage storage $ = _getIndexedStorage();
+        $.deployedBlockNumber =  _blockNumberProvider();
     }
 
-    // @TODO NatSpec
-    function deployedAtBlockNumber() external view returns (uint256 blockNumber) {
-        assembly {
-            blockNumber := sload(DEPLOYED_BLOCKNUMBER_SLOT.slot)
-        }
+    /**
+     * @notice Returns the block number at which the contract was deployed.
+     * @return uint256 The deployed block number.
+     */
+    function deployedBlockNumber() external view returns (uint256) {
+        return _getIndexedStorage().deployedBlockNumber;
     }
 
-    // @TODO NatSpec
-    function latestTransactionAt() external view returns (uint256 blockNumber) {
-        assembly {
-            blockNumber := sload(LASTSEEN_BLOCKNUMBER_SLOT.slot)
-        }
+     /**
+     * @notice Returns the last block number at which the contract was interacted with.
+     * @return uint256 The latest interaction block number.
+     */
+    function latestInteractBlockNumber() external view returns (uint256) {
+        return _getIndexedStorage().latestInteractBlockNumber;
     }
 }

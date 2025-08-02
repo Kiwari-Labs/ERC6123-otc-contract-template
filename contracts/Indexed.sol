@@ -9,8 +9,8 @@ pragma solidity >=0.8.0 <0.9.0;
 abstract contract Indexed {
     /** @custom:storage-location erc7201:indexed */
     struct IndexedStorage {
-        uint256 deployedBlockNumber;
-        uint256 latestInteractBlockNumber;
+        uint256 deployedBlockNumber;        // slot:0x8eca1f781afde2be911869090c62fb7cfdc951e1ab735da6bf694cda2bf8d600
+        uint256 latestInteractBlockNumber;  // slot:0x8eca1f781afde2be911869090c62fb7cfdc951e1ab735da6bf694cda2bf8d601
     }
     
     // keccak256(abi.encode(uint256(keccak256("indexed")) - 1)) & ~bytes32(uint256(0xff));
@@ -48,7 +48,7 @@ abstract contract Indexed {
      */
     function _stampBlockNumber() internal {
         IndexedStorage storage $ = _getIndexedStorage();
-        $.deployedBlockNumber =  _blockNumberProvider();
+        $.latestInteractBlockNumber =  _blockNumberProvider();
     }
 
     /**
